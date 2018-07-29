@@ -1,6 +1,8 @@
 package de.seven.fate.sudoku;
 
 import de.seven.fate.sudoku.enums.GameLevel;
+import de.seven.fate.sudoku.exceptions.GameUnresolvableException;
+import de.seven.fate.sudoku.exceptions.InvalidValueException;
 import de.seven.fate.sudoku.model.CellData;
 import de.seven.fate.sudoku.model.GameData;
 import de.seven.fate.sudoku.model.GroupData;
@@ -30,11 +32,9 @@ public class MachineGame implements Game {
 
         gameData = gameService.create();
 
-        List<Integer> values = IntStream.range(gameData.getMinValueSize(), gameData.getMaxValueSize()).boxed().collect(Collectors.toList());
+        List<Integer> values = getAvailableValues();
 
         initializeValues(values);
-
-        System.out.println("Start new Game....");
 
         consoleGamePrinter.print(gameData);
     }
@@ -43,8 +43,21 @@ public class MachineGame implements Game {
     public void nextStep() {
 
         if (!resolveImpl()) {
-            System.out.println("This game can't be solved!");
+
+            throw new GameUnresolvableException("This game can't be solved!");
         }
+
+        consoleGamePrinter.print(gameData);
+    }
+
+    @Override
+    public void setNextStep(int value, PositionData positionData) {
+
+        validateValue(value);
+
+        CellData cellData = getCellData(positionData);
+
+        setValue(value, cellData);
 
         consoleGamePrinter.print(gameData);
     }
@@ -55,39 +68,41 @@ public class MachineGame implements Game {
         return gameService.isDone(gameData);
     }
 
-    @Override
-    public void setNexValue(int value, PositionData positionData) {
+    private void setValue(int value, CellData cellData) {
+        assert cellData != null;
 
-        if (value < gameData.getMinValueSize()) {
+        boolean validValue = gameService.isValidValue(cellData, value);
 
-            System.err.println("Invalid value. Must be greater then: " + (gameData.getMinValueSize() - 1));
-            return;
+        if (!validValue) {
+
+            throw new InvalidValueException(value + " is invalid Value for this field. Please try again.");
         }
 
-        if (value > gameData.getMaxValueSize()) {
+        cellData.setValue(value);
+    }
 
-            System.err.println("Invalid value. Must be less then: " + (gameData.getMaxValueSize() + 1));
-            return;
-        }
+    private CellData getCellData(PositionData positionData) {
 
         CellData cellData = gameService.findCellByPosition(gameData, positionData);
 
         if (cellData == null) {
 
-            System.err.println("Unable to find field!");
+            throw new InvalidValueException("Unable to find field!");
+        }
+        return cellData;
+    }
 
-            return;
+    private void validateValue(int value) {
+
+        if (value < gameData.getMinValueSize()) {
+
+            throw new InvalidValueException("Invalid value. Must be greater then: " + (gameData.getMinValueSize() - 1));
         }
 
-        boolean validValue = gameService.isValidValue(cellData, value);
+        if (value > gameData.getMaxValueSize()) {
 
-        if (!validValue) {
-            System.err.println(value + " is invalid Value for this field. Please try again.");
+            throw new InvalidValueException("Invalid value. Must be less then: " + (gameData.getMaxValueSize() + 1));
         }
-
-        cellData.setValue(value);
-
-        consoleGamePrinter.print(gameData);
     }
 
     private void initializeValues(List<Integer> values) {
@@ -152,5 +167,8 @@ public class MachineGame implements Game {
         return false;
     }
 
+    private List<Integer> getAvailableValues() {
 
+        return IntStream.range(gameData.getMinValueSize(), gameData.getMaxValueSize()).boxed().collect(Collectors.toList());
+    }
 }

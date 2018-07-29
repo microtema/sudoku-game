@@ -9,11 +9,14 @@ import java.util.Scanner;
 
 public class MainGame {
 
-    static boolean running = true;
+    private static boolean running = true;
 
-    static Game game = new MachineGame(new ConsoleGamePrinter(), new GameService());
+    private static Game game = new MachineGame(new ConsoleGamePrinter(), new GameService());
 
     static {
+
+        System.out.println("Start new Game....");
+
         game.start(GameLevel.PROFI);
 
         System.out.println();
@@ -49,7 +52,7 @@ public class MainGame {
                 int rowIndex = Character.getNumericValue(commands[2].charAt(0)) - 10;
                 int columnIndex = Integer.parseInt(commands[3]) -1;
 
-                game.setNexValue(value, new PositionData(rowIndex, columnIndex));
+                game.setNextStep(value, new PositionData(rowIndex, columnIndex));
             }
 
         }

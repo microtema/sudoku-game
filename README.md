@@ -36,7 +36,7 @@ Interface API
 Simple CLI based Sudoku Game
 
 Commands:
-* set <value> <Field Letter> <Field-Index>
+* set \<value\> \<Field-Letter\> \<Field-Index\>
 * solve
 
 > Key information:

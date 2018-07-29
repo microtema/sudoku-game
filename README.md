@@ -1,5 +1,14 @@
 # sudoku-game
-Sudoku Machine Game
+
+> Key information:
+> Each Cell has one-to-one relation to row, column and block
+> Each Row contains a range or values (1..9)
+> Each Column contains a range or values (1..9)
+> Each Block (3x3) contains a range or values (1..9)
+> Each Cell has unique value of values (1..9) cross rows, columns and group where it belongs
+> Before set the value of range (1..9) to cell/field, check whenever this value is already available in row, column or block.
+> The Game is marked as unresolved when there is no more possible to set the unique value to cell.
+> \* Order of values is not important
 
 Data Model
 
@@ -33,16 +42,13 @@ Interface API
     * nextStep(value:int, position:PositionData) // solve next step (custom)
     * isDone() //determine whenever the game is done
 
+Sudoku Machine Game
+
 Simple CLI based Sudoku Game
 
 Commands:
 * set \<value\> \<Field-Letter\> \<Field-Index\>
 * solve
-
-> Key information:
-> Each Cell has relation to row, column and block
-> If any value of range (1..9) is already available in row, column or block, 
-> the Game is marked as unresolved (GAME-OVER).
 
 ## Technology Stack
 

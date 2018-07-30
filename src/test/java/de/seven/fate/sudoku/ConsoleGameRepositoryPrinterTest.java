@@ -1,7 +1,8 @@
 package de.seven.fate.sudoku;
 
 import de.seven.fate.sudoku.model.GameData;
-import de.seven.fate.sudoku.service.GameService;
+import de.seven.fate.sudoku.repository.GameRepository;
+import de.seven.fate.sudoku.validator.GameValidator;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -9,13 +10,13 @@ import org.junit.Test;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
-public class ConsoleGamePrinterTest {
+public class ConsoleGameRepositoryPrinterTest {
 
     ConsoleGamePrinter sut = new ConsoleGamePrinter();
 
-    GameService gameService = new GameService();
+    GameRepository gameRepository = new GameRepository(new GameValidator());
 
     // IMPORTANT: Save the old System.out!
     PrintStream old = System.out;
@@ -41,7 +42,7 @@ public class ConsoleGamePrinterTest {
     @Test
     public void printBlank() {
 
-        sut.print(gameService.create());
+        sut.print(gameRepository.create());
 
         assertEquals("\n" +
                 "    1   2   3   4   5   6   7   8   9\n" +
@@ -61,7 +62,7 @@ public class ConsoleGamePrinterTest {
     @Test
     public void printWithValues() {
 
-        GameData gameData = gameService.create();
+        GameData gameData = gameRepository.create();
 
         gameData.getRows().get(0).getCells().get(0).setValue(1);
         gameData.getRows().get(1).getCells().get(1).setValue(2);

@@ -1,11 +1,13 @@
-package de.seven.fate.sudoku.service;
+package de.seven.fate.sudoku.repository;
 
+import de.seven.fate.sudoku.exceptions.InvalidValueException;
 import de.seven.fate.sudoku.model.CellData;
 import de.seven.fate.sudoku.model.ColumnData;
 import de.seven.fate.sudoku.model.GameData;
 import de.seven.fate.sudoku.model.GroupData;
 import de.seven.fate.sudoku.model.PositionData;
 import de.seven.fate.sudoku.model.RowData;
+import de.seven.fate.sudoku.validator.GameValidator;
 import org.apache.commons.lang3.Validate;
 
 import java.util.Collection;
@@ -15,10 +17,16 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-public class GameService {
+public class GameRepository {
+
+    private final GameValidator gameValidator;
+
+    public GameRepository(GameValidator gameValidator) {
+        this.gameValidator = gameValidator;
+    }
 
     /**
-     * @return new Game
+     * @return new GameRepository
      */
     public GameData create() {
 
@@ -80,6 +88,36 @@ public class GameService {
                 .collect(Collectors.toList());
     }
 
+    public boolean solve(GameData gameData) {
+
+        CellData freeCell = findNextFreeCell(gameData);
+
+        // There is not more free cellData.
+        if (freeCell == null) {
+            return true;
+        }
+
+        for (int value = gameData.getMinValueSize(); value < gameData.getMaxValueSize(); value++) {
+
+            if (!gameValidator.isValidValue(freeCell, value)) {
+                continue;
+            }
+
+            freeCell.setValue(value);
+
+            if (solve(gameData)) {
+
+                return true; //GameRepository is done
+            } else {
+
+                //NOTE: reset the value again
+                freeCell.setValue(0);
+            }
+        }
+
+        return false;
+    }
+
     /**
      * Find CellData that is free to set a value
      *
@@ -91,8 +129,32 @@ public class GameService {
 
         return getCells(gameData)
                 .stream()
-                .filter(this::isFreeCellData)
+                .filter(gameValidator::isFreeCellData)
                 .findFirst().orElse(null);
+    }
+
+    public void setValue(int value, CellData cellData) {
+        Validate.notNull(cellData);
+
+        boolean validValue = gameValidator.isValidValue(cellData, value);
+
+        if (!validValue) {
+
+            throw new InvalidValueException(value + " is invalid Value for this field. Please try again.");
+        }
+
+        cellData.setValue(value);
+    }
+
+    public CellData getCellData(PositionData positionData, GameData gameData) {
+
+        CellData cellData = findCellByPosition(gameData, positionData);
+
+        if (cellData == null) {
+
+            throw new InvalidValueException("Unable to find field!");
+        }
+        return cellData;
     }
 
     /**
@@ -114,34 +176,7 @@ public class GameService {
 
     public boolean isDone(GameData gameData) {
 
-        return getCells(gameData).stream().noneMatch(this::isFreeCellData);
+        return getCells(gameData).stream().noneMatch(gameValidator::isFreeCellData);
     }
-
-    public boolean isValidValue(CellData cellData, int value) {
-        Validate.notNull(cellData);
-
-        // Is value used in row.
-        boolean anyMatch = cellData.getRowData().getCells().stream().anyMatch(it -> it.getValue() == value);
-
-        if (anyMatch) {
-            return false;
-        }
-
-        // Is value used in column.
-        anyMatch = cellData.getColumnData().getCells().stream().anyMatch(it -> it.getValue() == value);
-        if (anyMatch) {
-            return false;
-        }
-
-        // Is value used in group.
-        return cellData.getGroupData().getCells().stream().noneMatch(it -> it.getValue() == value);
-    }
-
-    private boolean isFreeCellData(CellData cellData) {
-        assert cellData != null;
-
-        return cellData.getValue() == 0;
-    }
-
 
 }

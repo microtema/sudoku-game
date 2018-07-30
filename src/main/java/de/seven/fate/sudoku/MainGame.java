@@ -1,8 +1,11 @@
 package de.seven.fate.sudoku;
 
 import de.seven.fate.sudoku.enums.GameLevel;
+import de.seven.fate.sudoku.model.CellData;
+import de.seven.fate.sudoku.model.GameData;
 import de.seven.fate.sudoku.model.PositionData;
-import de.seven.fate.sudoku.service.GameService;
+import de.seven.fate.sudoku.repository.GameRepository;
+import de.seven.fate.sudoku.validator.GameValidator;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Scanner;
@@ -11,13 +14,15 @@ public class MainGame {
 
     private static boolean running = true;
 
-    private static Game game = new MachineGame(new ConsoleGamePrinter(), new GameService());
+    private static GameService gameService = new MachineGameService(new ConsoleGamePrinter(), new GameRepository(new GameValidator()), new GameValidator());
+
+    private static GameData gameData;
 
     static {
 
-        System.out.println("Start new Game....");
+        System.out.println("Start new GameRepository....");
 
-        game.start(GameLevel.PROFI);
+        gameData = gameService.start(GameLevel.PROFI);
 
         System.out.println();
         System.out.println("Commands:");
@@ -41,7 +46,7 @@ public class MainGame {
 
             } else if (command.equals("solve")) {
 
-                game.nextStep();
+                gameService.nextStep(gameData);
 
                 running = false;
             } else if (command.startsWith("set")) {
@@ -50,9 +55,13 @@ public class MainGame {
 
                 int value = Integer.parseInt(commands[1]);
                 int rowIndex = Character.getNumericValue(commands[2].charAt(0)) - 10;
-                int columnIndex = Integer.parseInt(commands[3]) -1;
+                int columnIndex = Integer.parseInt(commands[3]) - 1;
 
-                game.setNextStep(value, new PositionData(rowIndex, columnIndex));
+                CellData cellData = new CellData(new PositionData(rowIndex, columnIndex), null, null, null);
+
+                cellData.setValue(value);
+
+                gameService.setNextStep(gameData, cellData);
             }
 
         }

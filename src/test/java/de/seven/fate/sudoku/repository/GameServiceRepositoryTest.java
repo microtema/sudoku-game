@@ -1,4 +1,4 @@
-package de.seven.fate.sudoku.service;
+package de.seven.fate.sudoku.repository;
 
 import de.seven.fate.sudoku.model.CellData;
 import de.seven.fate.sudoku.model.ColumnData;
@@ -6,22 +6,20 @@ import de.seven.fate.sudoku.model.GameData;
 import de.seven.fate.sudoku.model.GroupData;
 import de.seven.fate.sudoku.model.PositionData;
 import de.seven.fate.sudoku.model.RowData;
+import de.seven.fate.sudoku.validator.GameValidator;
 import org.junit.Test;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
 
-public class GameServiceTest {
+public class GameServiceRepositoryTest {
 
-    GameService sut = new GameService();
+    GameRepository sut = new GameRepository(new GameValidator());
 
     @Test
     public void create() {
